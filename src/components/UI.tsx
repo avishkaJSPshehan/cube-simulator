@@ -1,0 +1,110 @@
+import React from 'react';
+import { Layers, Move, Palette } from 'lucide-react';
+import { useCubeStore, CubeFace } from '../store/cubeStore';
+
+export const UI: React.FC = () => {
+    const {
+        size, setSize,
+        isExploded, setExploded,
+        explosionFactor, setExplosionFactor,
+        activeColor, setActiveColor
+    } = useCubeStore();
+
+    return (
+        <div className="w-full md:w-80 h-[30vh] md:h-full bg-white/90 backdrop-blur-xl border-l border-slate-200 p-6 flex flex-col gap-8 order-1 md:order-2 overflow-y-auto shadow-2xl">
+            <header className="flex flex-col gap-2">
+                <h1 className="text-3xl font-black tracking-tighter bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent italic leading-tight uppercase flex items-center gap-2">
+                    Cube Paint
+                </h1>
+                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] w-fit px-2 py-0.5 border border-slate-200 rounded-sm">
+                    Simulator v0.2
+                </p>
+            </header>
+
+            {/* Core Controls */}
+            <div className="flex flex-col gap-6">
+                <section>
+                    <div className="flex items-center gap-2 mb-4 text-slate-800 font-bold uppercase text-xs tracking-widest border-b border-slate-100 pb-2">
+                        <Layers size={14} className="text-blue-500" />
+                        Composition
+                    </div>
+                    <div className="space-y-4">
+                        <div className="flex flex-col gap-2">
+                            <div className="flex justify-between text-xs font-bold uppercase tracking-wider">
+                                <span className="text-slate-400">Grid Size</span>
+                                <span className="font-mono text-blue-600">{size}x{size}</span>
+                            </div>
+                            <input
+                                type="range" min="2" max="6" step="1"
+                                value={size}
+                                onChange={(e) => setSize(parseInt(e.target.value))}
+                                className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600 hover:accent-blue-500 transition-all"
+                            />
+                        </div>
+
+                        <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 hover:bg-slate-100 transition-all cursor-pointer group shadow-sm"
+                            onClick={() => setExploded(!isExploded)}>
+                            <div className="flex items-center gap-3">
+                                <Move size={16} className={isExploded ? 'text-blue-500' : 'text-slate-400'} />
+                                <span className={`text-sm font-bold ${isExploded ? 'text-slate-900' : 'text-slate-500'}`}>Exploded View</span>
+                            </div>
+                            <div className={`w-8 h-4 rounded-full transition-colors relative ${isExploded ? 'bg-blue-600' : 'bg-slate-200'}`}>
+                                <div className={`absolute top-1 left-1 w-2 h-2 rounded-full bg-white transition-transform ${isExploded ? 'translate-x-4' : 'translate-x-0 shadow-sm'}`} />
+                            </div>
+                        </div>
+
+                        {isExploded && (
+                            <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2">
+                                <div className="flex justify-between text-xs font-bold uppercase tracking-wider">
+                                    <span className="text-slate-400">Explosion</span>
+                                    <span className="font-mono text-blue-600">{(explosionFactor * 10).toFixed(1)}</span>
+                                </div>
+                                <input
+                                    type="range" min="0" max="0.5" step="0.05"
+                                    value={explosionFactor}
+                                    onChange={(e) => setExplosionFactor(parseFloat(e.target.value))}
+                                    className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                                />
+                            </div>
+                        )}
+                    </div>
+                </section>
+
+                <section>
+                    <div className="flex items-center gap-2 mb-4 text-slate-800 font-bold uppercase text-xs tracking-widest border-b border-slate-100 pb-2">
+                        <Palette size={14} className="text-indigo-500" />
+                        Paint Mode
+                    </div>
+                    <div className="flex flex-col gap-4">
+                        <div className="flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-200 shadow-sm">
+                            <div className="relative group">
+                                <input
+                                    type="color"
+                                    value={activeColor}
+                                    onChange={(e) => setActiveColor(e.target.value)}
+                                    className="w-12 h-12 bg-transparent border-none cursor-pointer rounded-lg overflow-hidden p-0 shadow-inner"
+                                />
+                                <div className="absolute inset-0 rounded-lg border-2 border-slate-200 pointer-events-none group-hover:border-blue-400 transition-colors" />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Current Brush</span>
+                                <span className="text-sm font-mono font-bold text-slate-900 uppercase">{activeColor}</span>
+                            </div>
+                        </div>
+                        <p className="text-[10px] text-slate-400 font-medium italic px-1 leading-relaxed">
+                            Tip: Pick a color, then click any small cube face in the viewport to paint it individually.
+                        </p>
+                    </div>
+                </section>
+            </div>
+
+            <footer className="mt-auto text-[9px] text-center text-slate-300 font-bold uppercase tracking-[0.3em] flex items-center justify-center gap-4">
+                <span>React</span>
+                <span className="w-1 h-1 bg-slate-200 rounded-full" />
+                <span>ThreeJS</span>
+                <span className="w-1 h-1 bg-slate-200 rounded-full" />
+                <span>Zustand</span>
+            </footer>
+        </div>
+    );
+};
