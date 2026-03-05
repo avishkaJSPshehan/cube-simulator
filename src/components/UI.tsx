@@ -1,6 +1,6 @@
 import React from 'react';
 import { Layers, Move, Palette } from 'lucide-react';
-import { useCubeStore, CubeFace } from '../store/cubeStore';
+import { useCubeStore } from '../store/cubeStore';
 
 export const UI: React.FC = () => {
     const {
