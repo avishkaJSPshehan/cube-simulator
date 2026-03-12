@@ -19,7 +19,10 @@ const stickerConfigs: { face: CubeFace; pos: [number, number, number]; rot: [num
 
 const Cubelet: React.FC<CubeletProps> = ({ data }) => {
     const meshRef = useRef<THREE.Group>(null);
-    const { isExploded, explosionFactor, activeColor, setCubeletFaceColor } = useCubeStore();
+    const { 
+        isExploded, explosionFactor, activeColor, 
+        setCubeletFaceColor, interactionMode, toggleCubeletSelection
+    } = useCubeStore();
 
     useFrame(() => {
         if (meshRef.current) {
@@ -33,8 +36,13 @@ const Cubelet: React.FC<CubeletProps> = ({ data }) => {
         }
     });
 
-    const handleStickerClick = (face: CubeFace) => {
-        setCubeletFaceColor(data.id, face, activeColor);
+    const onPointerDown = (e: any, face: CubeFace = 'front') => {
+        e.stopPropagation();
+        if (interactionMode === 'paint') {
+            setCubeletFaceColor(data.id, face, activeColor);
+        } else if (interactionMode === 'select') {
+            toggleCubeletSelection(data.id);
+        }
     };
 
     return (
@@ -44,11 +52,14 @@ const Cubelet: React.FC<CubeletProps> = ({ data }) => {
                 args={[0.95, 0.95, 0.95]}
                 radius={0.08}
                 smoothness={4}
+                onPointerDown={(e) => onPointerDown(e)}
             >
                 <meshStandardMaterial
-                    color="#111111"
+                    color={data.isSelected ? "#3b82f6" : "#111111"}
                     metalness={0.9}
                     roughness={0.1}
+                    emissive={data.isSelected ? "#3b82f6" : "#000000"}
+                    emissiveIntensity={data.isSelected ? 0.5 : 0}
                 />
             </RoundedBox>
 
@@ -63,10 +74,7 @@ const Cubelet: React.FC<CubeletProps> = ({ data }) => {
                         args={[0.82, 0.82, 0.02]}
                         radius={0.05}
                         smoothness={4}
-                        onPointerDown={(e) => {
-                            e.stopPropagation();
-                            handleStickerClick(config.face);
-                        }}
+                        onPointerDown={(e) => onPointerDown(e, config.face)}
                         onPointerOver={(e) => {
                             e.stopPropagation();
                             document.body.style.cursor = 'pointer';

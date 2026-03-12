@@ -9,17 +9,24 @@ export interface CubeletState {
     currentPos: THREE.Vector3; // Current position in the NxNxN grid
     quaternion: THREE.Quaternion; // Total rotation applied to this cubelet
     colors: Record<CubeFace, string>;
+    isSelected: boolean;
 }
 
 export interface CubeStore {
-    size: number;
+    width: number;
+    height: number;
+    depth: number;
     cubelets: CubeletState[];
     isExploded: boolean;
     explosionFactor: number;
     isAnimating: boolean;
 
+    interactionMode: 'paint' | 'select';
+    selectedIds: string[];
+
     // Actions
     setSize: (size: number) => void;
+    setDimensions: (width: number, height: number, depth: number) => void;
     resetCube: () => void;
     setExploded: (exploded: boolean) => void;
     setExplosionFactor: (factor: number) => void;
@@ -28,30 +35,45 @@ export interface CubeStore {
     setCubeletFaceColor: (id: string, face: CubeFace, color: string) => void;
     activeColor: string;
     setActiveColor: (color: string) => void;
+    setInteractionMode: (mode: 'paint' | 'select') => void;
+    toggleCubeletSelection: (id: string) => void;
+    clearSelection: () => void;
+    deleteSelectedCubelets: () => void;
 }
 
 export const useCubeStore = create<CubeStore>((set, get) => ({
-    size: 3,
+    width: 3,
+    height: 3,
+    depth: 3,
     cubelets: [],
     isExploded: false,
     explosionFactor: 0.1,
     isAnimating: false,
     activeColor: '#3b82f6',
+    interactionMode: 'paint',
+    selectedIds: [],
 
     setSize: (size: number) => {
-        set({ size });
+        set({ width: size, height: size, depth: size });
+        get().resetCube();
+    },
+
+    setDimensions: (width: number, height: number, depth: number) => {
+        set({ width, height, depth });
         get().resetCube();
     },
 
     resetCube: () => {
-        const size = get().size;
+        const { width, height, depth } = get();
         const newCubelets: CubeletState[] = [];
-        const offset = (size - 1) / 2;
+        const offsetX = (width - 1) / 2;
+        const offsetY = (height - 1) / 2;
+        const offsetZ = (depth - 1) / 2;
 
-        for (let x = 0; x < size; x++) {
-            for (let y = 0; y < size; y++) {
-                for (let z = 0; z < size; z++) {
-                    const pos = new THREE.Vector3(x - offset, y - offset, z - offset);
+        for (let x = 0; x < width; x++) {
+            for (let y = 0; y < height; y++) {
+                for (let z = 0; z < depth; z++) {
+                    const pos = new THREE.Vector3(x - offsetX, y - offsetY, z - offsetZ);
 
                     // All faces start black
                     const cubeletColors: Record<CubeFace, string> = {
@@ -68,12 +90,13 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
                         initialPos: pos.clone(),
                         currentPos: pos.clone(),
                         quaternion: new THREE.Quaternion(),
-                        colors: cubeletColors
+                        colors: cubeletColors,
+                        isSelected: false
                     });
                 }
             }
         }
-        set({ cubelets: newCubelets, isAnimating: false });
+        set({ cubelets: newCubelets, isAnimating: false, selectedIds: [] });
     },
 
     setExploded: (isExploded: boolean) => set({ isExploded }),
@@ -94,5 +117,25 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
         set({ cubelets: updatedCubelets });
     },
 
-    setActiveColor: (activeColor: string) => set({ activeColor })
+    setActiveColor: (activeColor: string) => set({ activeColor }),
+
+    setInteractionMode: (interactionMode) => set({ interactionMode }),
+
+    toggleCubeletSelection: (id) => {
+        const cubelets = get().cubelets.map(c =>
+            c.id === id ? { ...c, isSelected: !c.isSelected } : c
+        );
+        const selectedIds = cubelets.filter(c => c.isSelected).map(c => c.id);
+        set({ cubelets, selectedIds });
+    },
+
+    clearSelection: () => {
+        const cubelets = get().cubelets.map(c => ({ ...c, isSelected: false }));
+        set({ cubelets, selectedIds: [] });
+    },
+
+    deleteSelectedCubelets: () => {
+        const cubelets = get().cubelets.filter(c => !c.isSelected);
+        set({ cubelets, selectedIds: [] });
+    }
 }));
