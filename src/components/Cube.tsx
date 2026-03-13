@@ -55,10 +55,10 @@ const Cubelet: React.FC<CubeletProps> = ({ data }) => {
                 onPointerDown={(e) => onPointerDown(e)}
             >
                 <meshStandardMaterial
-                    color={data.isSelected ? "#3b82f6" : "#111111"}
+                    color={data.isSelected ? "#60a5fa" : "#2563eb"}
                     metalness={0.9}
                     roughness={0.1}
-                    emissive={data.isSelected ? "#3b82f6" : "#000000"}
+                    emissive={data.isSelected ? "#60a5fa" : "#000000"}
                     emissiveIntensity={data.isSelected ? 0.5 : 0}
                 />
             </RoundedBox>

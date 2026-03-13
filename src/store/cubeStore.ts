@@ -75,14 +75,14 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
                 for (let z = 0; z < depth; z++) {
                     const pos = new THREE.Vector3(x - offsetX, y - offsetY, z - offsetZ);
 
-                    // All faces start black
+                    // All faces start blue
                     const cubeletColors: Record<CubeFace, string> = {
-                        front: '#111111',
-                        back: '#111111',
-                        left: '#111111',
-                        right: '#111111',
-                        top: '#111111',
-                        bottom: '#111111',
+                        front: '#3b82f6',
+                        back: '#3b82f6',
+                        left: '#3b82f6',
+                        right: '#3b82f6',
+                        top: '#3b82f6',
+                        bottom: '#3b82f6',
                     };
 
                     newCubelets.push({

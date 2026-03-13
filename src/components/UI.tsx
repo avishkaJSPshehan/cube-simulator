@@ -169,12 +169,11 @@ export const UI: React.FC = () => {
                 )}
             </div>
 
-            <footer className="mt-auto text-[9px] text-center text-slate-300 font-bold uppercase tracking-[0.3em] flex items-center justify-center gap-4">
-                <span>React</span>
-                <span className="w-1 h-1 bg-slate-200 rounded-full" />
-                <span>ThreeJS</span>
-                <span className="w-1 h-1 bg-slate-200 rounded-full" />
-                <span>Zustand</span>
+            <footer className="mt-auto pt-6 border-t border-slate-100 flex flex-col gap-2">
+                <p className="text-[10px] text-center text-slate-400 font-bold uppercase tracking-widest leading-loose">
+                    © copyright by <br/>
+                    <span className="text-blue-600 font-black">Amarasri Herath Technical Team</span>
+                </p>
             </footer>
         </div>
     );
