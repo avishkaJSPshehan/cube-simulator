@@ -17,6 +17,7 @@ export interface CubeStore {
     height: number;
     depth: number;
     cubelets: CubeletState[];
+    history: CubeletState[][];
     isExploded: boolean;
     explosionFactor: number;
     isAnimating: boolean;
@@ -33,6 +34,8 @@ export interface CubeStore {
     setAnimating: (animating: boolean) => void;
     updateCubelets: (newCubelets: CubeletState[]) => void;
     setCubeletFaceColor: (id: string, face: CubeFace, color: string) => void;
+    setFullCubeColor: (color: string) => void;
+    undo: () => void;
     activeColor: string;
     setActiveColor: (color: string) => void;
     setInteractionMode: (mode: 'paint' | 'select') => void;
@@ -46,6 +49,7 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
     height: 3,
     depth: 3,
     cubelets: [],
+    history: [],
     isExploded: false,
     explosionFactor: 0.1,
     isAnimating: false,
@@ -96,15 +100,22 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
                 }
             }
         }
-        set({ cubelets: newCubelets, isAnimating: false, selectedIds: [] });
+        set({ cubelets: newCubelets, isAnimating: false, selectedIds: [], history: [] });
     },
 
     setExploded: (isExploded: boolean) => set({ isExploded }),
     setExplosionFactor: (explosionFactor: number) => set({ explosionFactor }),
     setAnimating: (isAnimating: boolean) => set({ isAnimating }),
-    updateCubelets: (cubelets: CubeletState[]) => set({ cubelets }),
+    updateCubelets: (cubelets: CubeletState[]) => {
+        const currentHistory = get().history;
+        set({ 
+            history: [...currentHistory, get().cubelets].slice(-20), // Keep last 20 steps
+            cubelets 
+        });
+    },
 
     setCubeletFaceColor: (id: string, face: CubeFace, color: string) => {
+        const currentHistory = get().history;
         const updatedCubelets = get().cubelets.map(c => {
             if (c.id === id) {
                 return {
@@ -114,7 +125,45 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
             }
             return c;
         });
-        set({ cubelets: updatedCubelets });
+        set({ 
+            history: [...currentHistory, get().cubelets].slice(-20),
+            cubelets: updatedCubelets 
+        });
+    },
+
+    setFullCubeColor: (color: string) => {
+        const currentHistory = get().history;
+        const updatedCubelets = get().cubelets.map(c => ({
+            ...c,
+            colors: {
+                front: color,
+                back: color,
+                left: color,
+                right: color,
+                top: color,
+                bottom: color,
+            }
+        }));
+        set({ 
+            history: [...currentHistory, get().cubelets].slice(-20),
+            cubelets: updatedCubelets 
+        });
+    },
+
+    undo: () => {
+        const { history } = get();
+        if (history.length === 0) return;
+
+        const newHistory = [...history];
+        const previousState = newHistory.pop();
+        
+        if (previousState) {
+            set({
+                cubelets: previousState,
+                history: newHistory,
+                selectedIds: previousState.filter(c => c.isSelected).map(c => c.id)
+            });
+        }
     },
 
     setActiveColor: (activeColor: string) => set({ activeColor }),
@@ -135,7 +184,12 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
     },
 
     deleteSelectedCubelets: () => {
+        const currentHistory = get().history;
         const cubelets = get().cubelets.filter(c => !c.isSelected);
-        set({ cubelets, selectedIds: [] });
+        set({ 
+            history: [...currentHistory, get().cubelets].slice(-20),
+            cubelets, 
+            selectedIds: [] 
+        });
     }
 }));

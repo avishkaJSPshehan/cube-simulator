@@ -1,5 +1,5 @@
 import React from 'react';
-import { MousePointer2, Palette, Trash2, Layers } from 'lucide-react';
+import { MousePointer2, Palette, Trash2, Layers, Undo2, RotateCcw } from 'lucide-react';
 import { useCubeStore } from '../store/cubeStore';
 
 export const UI: React.FC = () => {
@@ -9,19 +9,48 @@ export const UI: React.FC = () => {
         explosionFactor, setExplosionFactor,
         activeColor, setActiveColor,
         interactionMode, setInteractionMode,
-        selectedIds, clearSelection, deleteSelectedCubelets
+        selectedIds, clearSelection, deleteSelectedCubelets,
+        undo, history, setFullCubeColor, resetCube
     } = useCubeStore();
+
+    const [globalColor, setGlobalColor] = React.useState('#3b82f6');
 
     return (
         <div className="w-full md:w-80 h-[30vh] md:h-full bg-white/90 backdrop-blur-xl border-l border-slate-200 p-6 flex flex-col gap-8 order-1 md:order-2 overflow-y-auto shadow-2xl">
             <header className="flex flex-col gap-2">
-                <h1 className="text-3xl font-black tracking-tighter bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent italic leading-tight uppercase flex items-center gap-2">
-                    Cube Paint
-                </h1>
-                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] w-fit px-2 py-0.5 border border-slate-200 rounded-sm">
-                    Simulator v0.2
-                </p>
+                <div className="flex justify-between items-start">
+                    <div className="flex flex-col gap-1">
+                        <h1 className="text-3xl font-black tracking-tighter bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent italic leading-tight uppercase flex items-center gap-2">
+                            Cube Paint
+                        </h1>
+                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] w-fit px-2 py-0.5 border border-slate-200 rounded-sm">
+                            Simulator v0.2
+                        </p>
+                    </div>
+                </div>
             </header>
+
+            <div className="flex gap-2">
+                <button
+                    onClick={undo}
+                    disabled={history.length === 0}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-xl font-bold text-xs uppercase transition-all border ${
+                        history.length > 0 
+                        ? 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm' 
+                        : 'bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed'
+                    }`}
+                >
+                    <Undo2 size={14} />
+                    Undo
+                </button>
+                <button
+                    onClick={resetCube}
+                    className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold text-xs uppercase hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
+                >
+                    <RotateCcw size={14} />
+                    Reset
+                </button>
+            </div>
 
             {/* Core Controls */}
             <div className="flex flex-col gap-6">
@@ -139,34 +168,60 @@ export const UI: React.FC = () => {
                     </div>
                 </section>
 
-                {interactionMode === 'paint' && (
-                    <section className="animate-in fade-in slide-in-from-bottom-2">
-                        <div className="flex items-center gap-2 mb-4 text-slate-800 font-bold uppercase text-xs tracking-widest border-b border-slate-100 pb-2">
-                            <Palette size={14} className="text-indigo-500" />
-                            Paint Mode
-                        </div>
-                        <div className="flex flex-col gap-4">
+                <section className="animate-in fade-in slide-in-from-bottom-2">
+                    <div className="flex items-center gap-2 mb-4 text-slate-800 font-bold uppercase text-xs tracking-widest border-b border-slate-100 pb-2">
+                        <Palette size={14} className="text-indigo-500" />
+                        Color Controls
+                    </div>
+                    
+                    <div className="flex flex-col gap-6">
+                        {/* Brush Color */}
+                        <div className="flex flex-col gap-3">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Paint Brush</span>
                             <div className="flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-200 shadow-sm">
                                 <div className="relative group">
                                     <input
                                         type="color"
                                         value={activeColor}
                                         onChange={(e) => setActiveColor(e.target.value)}
-                                        className="w-12 h-12 bg-transparent border-none cursor-pointer rounded-lg overflow-hidden p-0 shadow-inner"
+                                        className="w-10 h-10 bg-transparent border-none cursor-pointer rounded-lg overflow-hidden p-0 shadow-inner"
                                     />
                                     <div className="absolute inset-0 rounded-lg border-2 border-slate-200 pointer-events-none group-hover:border-blue-400 transition-colors" />
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Current Brush</span>
                                     <span className="text-sm font-mono font-bold text-slate-900 uppercase">{activeColor}</span>
                                 </div>
                             </div>
-                            <p className="text-[10px] text-slate-400 font-medium italic px-1 leading-relaxed">
-                                Tip: Pick a color, then click any small cube face in the viewport to paint it individually.
-                            </p>
                         </div>
-                    </section>
-                )}
+
+                        {/* Global Color */}
+                        <div className="flex flex-col gap-3">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Global Color</span>
+                            <div className="flex items-center gap-2">
+                                <div className="relative flex-grow">
+                                    <div className="flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-200 shadow-sm">
+                                        <input
+                                            type="color"
+                                            value={globalColor}
+                                            onChange={(e) => setGlobalColor(e.target.value)}
+                                            className="w-10 h-10 bg-transparent border-none cursor-pointer rounded-lg overflow-hidden p-0 shadow-inner"
+                                        />
+                                        <button 
+                                            onClick={() => setFullCubeColor(globalColor)}
+                                            className="flex-grow py-2 px-4 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-tighter hover:bg-blue-700 transition-colors shadow-sm"
+                                        >
+                                            Apply to All
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p className="text-[10px] text-slate-400 font-medium italic px-1 leading-relaxed">
+                            Tip: Pick a brush color to paint faces, or use Global Color to change the entire cube at once.
+                        </p>
+                    </div>
+                </section>
             </div>
 
             <footer className="mt-auto pt-6 border-t border-slate-100 flex flex-col gap-2">
