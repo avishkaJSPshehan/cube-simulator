@@ -24,6 +24,7 @@ export interface CubeStore {
 
     interactionMode: 'paint' | 'select';
     selectedIds: string[];
+    focusedId: string | null;
 
     // Actions
     setSize: (size: number) => void;
@@ -42,6 +43,7 @@ export interface CubeStore {
     toggleCubeletSelection: (id: string) => void;
     clearSelection: () => void;
     deleteSelectedCubelets: () => void;
+    setFocusedId: (id: string | null) => void;
 }
 
 export const useCubeStore = create<CubeStore>((set, get) => ({
@@ -53,9 +55,10 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
     isExploded: false,
     explosionFactor: 0.1,
     isAnimating: false,
-    activeColor: '#3b82f6',
+    activeColor: '#ffffff',
     interactionMode: 'paint',
     selectedIds: [],
+    focusedId: null,
 
     setSize: (size: number) => {
         set({ width: size, height: size, depth: size });
@@ -79,14 +82,14 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
                 for (let z = 0; z < depth; z++) {
                     const pos = new THREE.Vector3(x - offsetX, y - offsetY, z - offsetZ);
 
-                    // All faces start blue
+                    // All faces start white
                     const cubeletColors: Record<CubeFace, string> = {
-                        front: '#3b82f6',
-                        back: '#3b82f6',
-                        left: '#3b82f6',
-                        right: '#3b82f6',
-                        top: '#3b82f6',
-                        bottom: '#3b82f6',
+                        front: '#ffffff',
+                        back: '#ffffff',
+                        left: '#ffffff',
+                        right: '#ffffff',
+                        top: '#ffffff',
+                        bottom: '#ffffff',
                     };
 
                     newCubelets.push({
@@ -100,7 +103,7 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
                 }
             }
         }
-        set({ cubelets: newCubelets, isAnimating: false, selectedIds: [], history: [] });
+        set({ cubelets: newCubelets, isAnimating: false, selectedIds: [], history: [], focusedId: null });
     },
 
     setExploded: (isExploded: boolean) => set({ isExploded }),
@@ -191,5 +194,7 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
             cubelets, 
             selectedIds: [] 
         });
-    }
+    },
+
+    setFocusedId: (focusedId) => set({ focusedId })
 }));

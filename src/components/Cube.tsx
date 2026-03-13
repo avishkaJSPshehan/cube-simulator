@@ -21,8 +21,13 @@ const Cubelet: React.FC<CubeletProps> = ({ data }) => {
     const meshRef = useRef<THREE.Group>(null);
     const { 
         isExploded, explosionFactor, activeColor, 
-        setCubeletFaceColor, interactionMode, toggleCubeletSelection
+        setCubeletFaceColor, interactionMode, toggleCubeletSelection,
+        focusedId, setFocusedId
     } = useCubeStore();
+
+    const isFocused = focusedId === data.id;
+    const hasFocus = focusedId !== null;
+    const opacity = hasFocus ? (isFocused ? 1 : 0.15) : 1;
 
     useFrame(() => {
         if (meshRef.current) {
@@ -45,8 +50,17 @@ const Cubelet: React.FC<CubeletProps> = ({ data }) => {
         }
     };
 
+    const handleDoubleClick = (e: any) => {
+        e.stopPropagation();
+        if (focusedId === data.id) {
+            setFocusedId(null);
+        } else {
+            setFocusedId(data.id);
+        }
+    };
+
     return (
-        <group ref={meshRef}>
+        <group ref={meshRef} onDoubleClick={handleDoubleClick}>
             {/* The main body of the small cube */}
             <RoundedBox
                 args={[0.95, 0.95, 0.95]}
@@ -55,11 +69,13 @@ const Cubelet: React.FC<CubeletProps> = ({ data }) => {
                 onPointerDown={(e) => onPointerDown(e)}
             >
                 <meshStandardMaterial
-                    color={data.isSelected ? "#60a5fa" : "#2563eb"}
-                    metalness={0.9}
-                    roughness={0.1}
-                    emissive={data.isSelected ? "#60a5fa" : "#000000"}
-                    emissiveIntensity={data.isSelected ? 0.5 : 0}
+                    color={data.isSelected ? "#cbd5e1" : "#ffffff"}
+                    metalness={0.2}
+                    roughness={0.8}
+                    emissive={data.isSelected ? "#cbd5e1" : "#000000"}
+                    emissiveIntensity={data.isSelected ? 0.2 : 0}
+                    transparent={hasFocus}
+                    opacity={opacity}
                 />
             </RoundedBox>
 
@@ -89,6 +105,8 @@ const Cubelet: React.FC<CubeletProps> = ({ data }) => {
                             emissiveIntensity={0.1}
                             metalness={0.4}
                             roughness={0.2}
+                            transparent={hasFocus}
+                            opacity={opacity}
                         />
                     </RoundedBox>
                 </group>
@@ -99,9 +117,10 @@ const Cubelet: React.FC<CubeletProps> = ({ data }) => {
 
 export const Cube: React.FC = () => {
     const cubelets = useCubeStore((state) => state.cubelets);
+    const setFocusedId = useCubeStore((state) => state.setFocusedId);
 
     return (
-        <group>
+        <group onPointerMissed={() => setFocusedId(null)}>
             {cubelets.map((cubelet) => (
                 <Cubelet key={cubelet.id} data={cubelet} />
             ))}

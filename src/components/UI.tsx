@@ -13,7 +13,7 @@ export const UI: React.FC = () => {
         undo, history, setFullCubeColor, resetCube
     } = useCubeStore();
 
-    const [globalColor, setGlobalColor] = React.useState('#3b82f6');
+    const [globalColor, setGlobalColor] = React.useState('#ffffff');
 
     return (
         <div className="w-full md:w-80 h-[30vh] md:h-full bg-white/90 backdrop-blur-xl border-l border-slate-200 p-6 flex flex-col gap-8 order-1 md:order-2 overflow-y-auto shadow-2xl">
@@ -154,11 +154,11 @@ export const UI: React.FC = () => {
                         {isExploded && (
                             <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2">
                                 <div className="flex justify-between text-xs font-bold uppercase tracking-wider">
-                                    <span className="text-slate-400">Explosion</span>
+                                    <span className="text-slate-400">Explosion Intensity</span>
                                     <span className="font-mono text-blue-600">{(explosionFactor * 10).toFixed(1)}</span>
                                 </div>
                                 <input
-                                    type="range" min="0" max="0.5" step="0.05"
+                                    type="range" min="0" max="1.5" step="0.05"
                                     value={explosionFactor}
                                     onChange={(e) => setExplosionFactor(parseFloat(e.target.value))}
                                     className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
