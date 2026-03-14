@@ -69,10 +69,10 @@ const Cubelet: React.FC<CubeletProps> = ({ data }) => {
                 onPointerDown={(e) => onPointerDown(e)}
             >
                 <meshStandardMaterial
-                    color={data.isSelected ? "#cbd5e1" : "#ffffff"}
+                    color={data.isSelected ? "crimson" : "#ffffff"}
                     metalness={0.2}
                     roughness={0.8}
-                    emissive={data.isSelected ? "#cbd5e1" : "#000000"}
+                    emissive={data.isSelected ? "crimson" : "#000000"}
                     emissiveIntensity={data.isSelected ? 0.2 : 0}
                     transparent={hasFocus}
                     opacity={opacity}
