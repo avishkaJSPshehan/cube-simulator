@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
-import { RoundedBox } from '@react-three/drei';
+import { RoundedBox, Text } from '@react-three/drei';
 import { useCubeStore, CubeletState, CubeFace } from '../store/cubeStore';
 
 interface CubeletProps {
@@ -22,7 +22,7 @@ const Cubelet: React.FC<CubeletProps> = ({ data }) => {
     const { 
         isExploded, explosionFactor, activeColor, 
         setCubeletFaceColor, interactionMode, toggleCubeletSelection,
-        focusedId, setFocusedId
+        focusedId, setFocusedId, addNumberToCubelet
     } = useCubeStore();
 
     const isFocused = focusedId === data.id;
@@ -47,6 +47,8 @@ const Cubelet: React.FC<CubeletProps> = ({ data }) => {
             setCubeletFaceColor(data.id, face, activeColor);
         } else if (interactionMode === 'select') {
             toggleCubeletSelection(data.id);
+        } else if (interactionMode === 'numbering') {
+            addNumberToCubelet(data.id);
         }
     };
 
@@ -93,7 +95,9 @@ const Cubelet: React.FC<CubeletProps> = ({ data }) => {
                         onPointerDown={(e) => onPointerDown(e, config.face)}
                         onPointerOver={(e) => {
                             e.stopPropagation();
-                            document.body.style.cursor = 'pointer';
+                            if (interactionMode !== 'select') {
+                                document.body.style.cursor = 'pointer';
+                            }
                         }}
                         onPointerOut={() => {
                             document.body.style.cursor = 'auto';
@@ -109,6 +113,19 @@ const Cubelet: React.FC<CubeletProps> = ({ data }) => {
                             opacity={opacity}
                         />
                     </RoundedBox>
+                    
+                    {/* Number Display - Show on every face */}
+                    {data.number !== null && (
+                        <Text
+                            position={[0, 0, 0.02]}
+                            fontSize={0.4}
+                            color="black"
+                            anchorX="center"
+                            anchorY="middle"
+                        >
+                            {data.number}
+                        </Text>
+                    )}
                 </group>
             ))}
         </group>

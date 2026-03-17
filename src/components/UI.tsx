@@ -1,5 +1,5 @@
 import React from 'react';
-import { MousePointer2, Palette, Trash2, Layers, Undo2, RotateCcw } from 'lucide-react';
+import { MousePointer2, Palette, Trash2, Layers, Undo2, RotateCcw, Hash } from 'lucide-react';
 import { useCubeStore } from '../store/cubeStore';
 
 export const UI: React.FC = () => {
@@ -10,7 +10,8 @@ export const UI: React.FC = () => {
         activeColor, setActiveColor,
         interactionMode, setInteractionMode,
         selectedIds, clearSelection, deleteSelectedCubelets,
-        undo, history, setFullCubeColor, resetCube
+        undo, history, setFullCubeColor, resetCube,
+        nextNumber, resetNumbering
     } = useCubeStore();
 
     const [globalColor, setGlobalColor] = React.useState('#ffffff');
@@ -59,8 +60,8 @@ export const UI: React.FC = () => {
                         <MousePointer2 size={14} className="text-emerald-500" />
                         Interaction Mode
                     </div>
-                    <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl mb-4">
-                        {(['paint', 'select'] as const).map((mode) => (
+                    <div className="grid grid-cols-3 gap-2 p-1 bg-slate-100 rounded-xl mb-4">
+                        {(['paint', 'select', 'numbering'] as const).map((mode) => (
                             <button
                                 key={mode}
                                 onClick={() => setInteractionMode(mode)}
@@ -76,6 +77,22 @@ export const UI: React.FC = () => {
                     </div>
 
                     <div className="space-y-4">
+                        {interactionMode === 'numbering' && (
+                            <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2">
+                                <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider">
+                                    <span className="text-slate-400">Next Number</span>
+                                    <span className="font-mono text-blue-600">{nextNumber}</span>
+                                </div>
+                                <button
+                                    onClick={resetNumbering}
+                                    className="w-full py-2 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold uppercase text-slate-600 hover:bg-slate-100 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <Hash size={12} />
+                                    Reset Numbering
+                                </button>
+                            </div>
+                        )}
+
                         {interactionMode === 'select' && (
                             <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2">
                                 <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider">

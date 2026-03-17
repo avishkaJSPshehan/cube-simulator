@@ -10,6 +10,7 @@ export interface CubeletState {
     quaternion: THREE.Quaternion; // Total rotation applied to this cubelet
     colors: Record<CubeFace, string>;
     isSelected: boolean;
+    number: number | null;
 }
 
 export interface CubeStore {
@@ -22,9 +23,10 @@ export interface CubeStore {
     explosionFactor: number;
     isAnimating: boolean;
 
-    interactionMode: 'paint' | 'select';
+    interactionMode: 'paint' | 'select' | 'numbering';
     selectedIds: string[];
     focusedId: string | null;
+    nextNumber: number;
 
     // Actions
     setSize: (size: number) => void;
@@ -39,11 +41,13 @@ export interface CubeStore {
     undo: () => void;
     activeColor: string;
     setActiveColor: (color: string) => void;
-    setInteractionMode: (mode: 'paint' | 'select') => void;
+    setInteractionMode: (mode: 'paint' | 'select' | 'numbering') => void;
     toggleCubeletSelection: (id: string) => void;
     clearSelection: () => void;
     deleteSelectedCubelets: () => void;
     setFocusedId: (id: string | null) => void;
+    addNumberToCubelet: (id: string) => void;
+    resetNumbering: () => void;
 }
 
 export const useCubeStore = create<CubeStore>((set, get) => ({
@@ -59,6 +63,7 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
     interactionMode: 'paint',
     selectedIds: [],
     focusedId: null,
+    nextNumber: 1,
 
     setSize: (size: number) => {
         set({ width: size, height: size, depth: size });
@@ -98,12 +103,13 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
                         currentPos: pos.clone(),
                         quaternion: new THREE.Quaternion(),
                         colors: cubeletColors,
-                        isSelected: false
+                        isSelected: false,
+                        number: null
                     });
                 }
             }
         }
-        set({ cubelets: newCubelets, isAnimating: false, selectedIds: [], history: [], focusedId: null });
+        set({ cubelets: newCubelets, isAnimating: false, selectedIds: [], history: [], focusedId: null, nextNumber: 1 });
     },
 
     setExploded: (isExploded: boolean) => set({ isExploded }),
@@ -196,5 +202,31 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
         });
     },
 
-    setFocusedId: (focusedId) => set({ focusedId })
+    setFocusedId: (focusedId) => set({ focusedId }),
+
+    addNumberToCubelet: (id) => {
+        const { cubelets, nextNumber, history } = get();
+        const cubelet = cubelets.find(c => c.id === id);
+        
+        if (cubelet && cubelet.number === null) {
+            const updatedCubelets = cubelets.map(c => 
+                c.id === id ? { ...c, number: nextNumber } : c
+            );
+            set({
+                history: [...history, cubelets].slice(-20),
+                cubelets: updatedCubelets,
+                nextNumber: nextNumber + 1
+            });
+        }
+    },
+
+    resetNumbering: () => {
+        const { cubelets, history } = get();
+        const updatedCubelets = cubelets.map(c => ({ ...c, number: null }));
+        set({
+            history: [...history, cubelets].slice(-20),
+            cubelets: updatedCubelets,
+            nextNumber: 1
+        });
+    }
 }));
